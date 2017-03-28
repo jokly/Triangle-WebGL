@@ -35,8 +35,6 @@ class Renderer {
 
     initAttributes() {
         for (name in this.geometry.attributes) {
-            let attribute = this.geometry.attributes[name];
-
             this.attributesLocations[name] = this.gl.getAttribLocation(this.program.glProgram, name);
 
             if (this.attributesLocations[name] === -1) {
@@ -46,6 +44,11 @@ class Renderer {
 
             this.gl.enableVertexAttribArray(this.attributesLocations[name]);
         }
+    }
+
+    setViewport(viewportWidth, viewportHeight) {
+        this.viewportWidth = viewportWidth;
+        this.viewportHeight = viewportHeight;
     }
 
     render() {
@@ -69,7 +72,6 @@ class Renderer {
 
         this.program.updateUniforms();
 
-        //for (let [name, attribute] of this.geometry.attributes) {
         for (let name in this.geometry.attributes) {
             let attribute = this.geometry.attributes[name];
             

@@ -5,11 +5,13 @@ import Geometry from './Geometry';
 import Renderer from './Renderer';
 
 let canvas = document.getElementById('webgl-canvas');
-let glContext = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-let viewportWidth = canvas.width;
-let viewportHeight = canvas.height;
 
-let renderer = new Renderer(glContext, viewportWidth, viewportHeight);
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let glContext = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+
+let renderer = new Renderer(glContext, canvas.width, canvas.height);
 
 let program = new Program(glContext);
 program.setVertexShader('shader-vs');
@@ -26,6 +28,7 @@ let color = [
     0.0, 1.0, 0.0, 1.0,
     0.0, 0.0, 1.0, 1.0
 ];
+
 geometry.addAttribute('vertexPosition', new Float32Array(vertices), 3);
 geometry.addAttribute('vertexColor', new Float32Array(color), 4);
 renderer.setGeometry(geometry);
@@ -33,12 +36,27 @@ renderer.setGeometry(geometry);
 let mvMatrix = mat4.create();
 let pMatrix = mat4.create();
 
-mat4.perspective(pMatrix, 0.7853981634, viewportWidth / viewportHeight, 0.1, 100.0);
+setPMatrix(window.innerWidth, window.innerHeight);
 mat4.identity(mvMatrix);
 mat4.translate(mvMatrix, mvMatrix, [0.0, 0.0, -7.0]);
 
 program.setUniform('uMVMatrix', mvMatrix, '4fv');
-program.setUniform('uPMatrix', pMatrix, '4fv');
+
+function render() {
+    renderer.setProgram(program);
+    program.updateUniforms();
+    tick();
+}
+
+function tick() {
+    window.requestAnimationFrame(tick);
+    renderer.render();
+}
+
+function setPMatrix(viewportWidth, viewportHeight) {
+    mat4.perspective(pMatrix, 0.7853981634, viewportWidth / viewportHeight, 0.1, 100.0);     
+    program.setUniform('uPMatrix', pMatrix, '4fv');      
+}
 
 document.onkeydown = function(e) {
     switch (e.keyCode) {
@@ -63,15 +81,12 @@ document.onkeydown = function(e) {
     }
 };
 
-function render() {
-    renderer.setProgram(program);
-    program.updateUniforms();
-    tick();
-}
+window.onresize = function(event) {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-function tick() {
-    window.requestAnimationFrame(tick);
-    renderer.render();
-}
+    setPMatrix(canvas.width, canvas.height);
+    renderer.setViewport(canvas.width, canvas.height);
+};
 
 render();
