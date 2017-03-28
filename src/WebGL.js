@@ -49,7 +49,7 @@ function render() {
 }
 
 function tick() {
-    window.requestAnimationFrame(tick);
+    window.requestAnimFrame(render);
     renderer.render();
 }
 
@@ -88,5 +88,15 @@ window.onresize = function(event) {
     setPMatrix(canvas.width, canvas.height);
     renderer.setViewport(canvas.width, canvas.height);
 };
+
+window.requestAnimFrame = (function(){
+    return  window.requestAnimationFrame   ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame    ||
+        window.ieRequestAnimationFrame     ||
+        function( callback ){
+            window.setTimeout(callback, 1000 / 60);
+        };
+})();
 
 render();
